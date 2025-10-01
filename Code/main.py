@@ -1,53 +1,49 @@
-from settings import *
-from Snake import Snake, Apple  
+import pygame
+import random
 
-class Game:
-    def __init__(self):
-        pygame.init()
-        self.display = pygame.display.set_mode((S_WIDTH,S_HEIGHT))
-        pygame.display.set_caption('~Snakeyy~')
-        self.clock = pygame.time.Clock()
-        self.running = True
+pygame.init()
 
-        self.all_sprites = pygame.sprite.Group()
-        self.apple_group = pygame.sprite.Group()
-        self.snake = Snake(self.all_sprites)
-        self.apple = Apple(self.all_sprites)
-        self.apple_group.add(self.apple)
+Height, Width = 600, 600
+screen = pygame.display.set_mode((Width, Height))
 
-    def Food_Touched(self):
-        if pygame.sprite.spritecollide(self.snake,self.apple_group,True):
-            self.apple = Apple(self.all_sprites)
-            self.apple_group.add(self.apple)
+clock = pygame.time.Clock()
+FPS = 24
 
-    def run(self):
-        while self.running:
+snake_dir = (5, 0)
+snake_size = 10
+snake = [(Width//2, Height//2),(Width//2 -snake_size,Height//2 -snake_size),(Width//2 - (2*snake_size), Height//2 - (2*snake_size)) ]
 
-            dt = self.clock.tick(60)/1000
+apple = (random.randrange(0,Width,snake_size),random.randrange(0,Height,snake_size))
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running  = False
-
-            #update
-            pygame.display.flip()
-            self.Food_Touched()
-            self.all_sprites.update(dt)
-
-            #draw
-            self.display.fill("black")
-            self.all_sprites.draw(self.display)
-        
-        pygame.quit()
+running = True
 
 
-if __name__ == '__main__':    
-    game = Game()
-    game.run()
+while running:
+    clock.tick(FPS)
 
-    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-        
-    
-    
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and snake_dir != (0,10): snake_dir = (0,-10)
+    if keys[pygame.K_DOWN] and snake_dir != (0,-10): snake_dir = (0,10)
+    if keys[pygame.K_LEFT] and snake_dir != (10 ,0): snake_dir = (-10,0)
+    if keys[pygame.K_RIGHT] and snake_dir != (-10,0): snake_dir = (10,0)
 
+    head = (snake[0][0] + snake_dir[0], snake[0][1] +snake_dir[1])
+    snake.insert(0,head)
+
+    if head == apple :
+        apple = (random.randrange(0,Width,snake_size),random.randrange(0,Height,snake_size))
+    else:
+        snake.pop()
+
+    screen.fill('black')
+    for body in snake:
+        pygame.draw.rect(screen,(0,255,0),(*body,snake_size,snake_size))
+    pygame.draw.rect(screen,(255,0,0),(*apple, snake_size,snake_size))
+
+    pygame.display.flip()
+
+pygame.quit()
